@@ -1002,6 +1002,9 @@ ngx_single_process_cycle(ngx_cycle_t *cycle)
 }
 
 
+/**
+ * 处理信号
+ */
 ngx_int_t
 ngx_os_signal_process(ngx_cycle_t *cycle, char *sig, ngx_pid_t pid)
 {

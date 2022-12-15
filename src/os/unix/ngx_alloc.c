@@ -14,6 +14,9 @@ ngx_uint_t  ngx_pagesize_shift;
 ngx_uint_t  ngx_cacheline_size;
 
 
+/**
+ * 封装了malloc函数，并且添加了日志
+*/
 void *
 ngx_alloc(size_t size, ngx_log_t *log)
 {
@@ -30,7 +33,10 @@ ngx_alloc(size_t size, ngx_log_t *log)
     return p;
 }
 
-
+/**
+ * 调用ngx_alloc方法，如果分配成，则调用ngx_memzero方法，将内存块设置为0
+ * #define ngx_memzero(buf, n)  (void) memset(buf, 0, n)
+ */
 void *
 ngx_calloc(size_t size, ngx_log_t *log)
 {

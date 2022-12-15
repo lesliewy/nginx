@@ -74,13 +74,16 @@
 #define NGX_MAX_CONF_ERRSTR  1024
 
 
+/**
+ * 模块支持的命令集结构
+ */
 struct ngx_command_s {
-    ngx_str_t             name;
-    ngx_uint_t            type;
-    char               *(*set)(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+    ngx_str_t             name;     /* 命令名称 */
+    ngx_uint_t            type;     /* 命令类别 */
+    char               *(*set)(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);   /* set回调函数 最终设置值的时候，都会调用set的回调函数。*/
     ngx_uint_t            conf;
-    ngx_uint_t            offset;
-    void                 *post;
+    ngx_uint_t            offset;   /* 偏移量，命令长度 */
+    void                 *post;     /* 支持的回调方法；大多数情况为NULL*/
 };
 
 #define ngx_null_command  { ngx_null_string, 0, NULL, 0, 0, NULL }

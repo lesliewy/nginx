@@ -22,6 +22,8 @@ ngx_uint_t         ngx_max_module;
 static ngx_uint_t  ngx_modules_n;
 
 
+/* 初始化所有模块；并对所有模块进行编号处理；
+     * ngx_modules数是在自动编译的时候生成的，位于objs/ngx_modules.c文件中   */
 ngx_int_t
 ngx_preinit_modules(void)
 {

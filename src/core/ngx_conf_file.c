@@ -153,7 +153,10 @@ ngx_conf_add_dump(ngx_conf_t *cf, ngx_str_t *filename)
     return NGX_OK;
 }
 
-
+/**
+ * 解析配置信息核心函数
+ * 包含：解析命令中的配置信息和文件中的配置信息
+ */
 char *
 ngx_conf_parse(ngx_conf_t *cf, ngx_str_t *filename)
 {

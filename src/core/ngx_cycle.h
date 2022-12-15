@@ -35,10 +35,12 @@ struct ngx_shm_zone_s {
     ngx_uint_t                noreuse;  /* unsigned  noreuse:1; */
 };
 
-
+/**
+ * Nginx全局变量cycle
+ */
 struct ngx_cycle_s {
-    void                  ****conf_ctx;
-    ngx_pool_t               *pool;
+    void                  ****conf_ctx;              /* 配置文件 上下文的数组，每个模块的配置信息*/
+    ngx_pool_t               *pool;                  /* 内存池地址 */
 
     ngx_log_t                *log;
     ngx_log_t                 new_log;
@@ -49,8 +51,8 @@ struct ngx_cycle_s {
     ngx_connection_t         *free_connections;
     ngx_uint_t                free_connection_n;
 
-    ngx_module_t            **modules;
-    ngx_uint_t                modules_n;
+    ngx_module_t            **modules;                /* 模块数组 */
+    ngx_uint_t                modules_n;              /* 模块个数 */
     ngx_uint_t                modules_used;    /* unsigned  modules_used:1; */
 
     ngx_queue_t               reusable_connections_queue;
@@ -83,7 +85,16 @@ struct ngx_cycle_s {
     ngx_str_t                 hostname;
 };
 
-
+/**
+ * 核心配置文件信息
+ * 对应nginx.conf的
+ * #user  nobody;
+	worker_processes  1;
+	#error_log  logs/error.log;
+	#error_log  logs/error.log  notice;
+	#error_log  logs/error.log  info;
+	#pid        logs/nginx.pid;
+ */
 typedef struct {
     ngx_flag_t                daemon;
     ngx_flag_t                master;

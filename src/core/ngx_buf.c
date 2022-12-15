@@ -3,7 +3,14 @@
  * Copyright (C) Igor Sysoev
  * Copyright (C) Nginx, Inc.
  */
+/**
+ * Nginx的buf缓冲区数据结构，主要用来存储非常大块的内存。ngx_buf_t数据结构也贯穿了整个Nginx。
 
+Nginx的缓冲区设计是比较灵活的。
+  可以自定义管理业务层面的缓冲区链表；
+  也可以将空闲的缓冲区链表交还给内存池pool->chain结构。
+缓冲区ngx_buf_t是nginx处理大数据的关键数据结构，它既应用于内存数据也应用于磁盘数据。
+*/
 
 #include <ngx_config.h>
 #include <ngx_core.h>

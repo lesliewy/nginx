@@ -35,6 +35,9 @@ static ngx_connection_t  dumb;
 /* STUB */
 
 
+/**
+ * ngx_init_cycle全局变量的初始化中会初始化Nginx的核心模块的配置信息。核心模块的配置参数在nginx.conf文件中最顶层的一些参数配置。
+*/
 ngx_cycle_t *
 ngx_init_cycle(ngx_cycle_t *old_cycle)
 {
@@ -218,7 +221,14 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         return NULL;
     }
 
-
+    /*
+     * 下面这段代码我们可以看到，遍历模块数组，如果是核心模块，则获取核心模块的上下文cycle->modules[i]->ctx，
+     * 核心模块上下文是一个自定义的数据结构ngx_core_module_ctx，里面包含了配置文件创建的回调函数ngx_core_module_create_conf 
+     *
+     * 核心模块的配置文件创建
+     * 配置创建调用nginx.c 中的 ngx_core_module_create_conf
+     * 以及其他核心模块的init_conf，例如：ngx_event_core_module_ctx中的ngx_event_core_create_conf
+     * */
     for (i = 0; cycle->modules[i]; i++) {
         if (cycle->modules[i]->type != NGX_CORE_MODULE) {
             continue;
@@ -227,12 +237,12 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         module = cycle->modules[i]->ctx;
 
         if (module->create_conf) {
-            rv = module->create_conf(cycle);
+            rv = module->create_conf(cycle);   //模块回调函数，创建模块的配置信息
             if (rv == NULL) {
                 ngx_destroy_pool(pool);
                 return NULL;
             }
-            cycle->conf_ctx[cycle->modules[i]->index] = rv;
+            cycle->conf_ctx[cycle->modules[i]->index] = rv;   //配置文件复制
         }
     }
 
@@ -240,6 +250,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     senv = environ;
 
 
+    /* 解析配置文件 */
     ngx_memzero(&conf, sizeof(ngx_conf_t));
     /* STUB: init array ? */
     conf.args = ngx_array_create(pool, 10, sizeof(ngx_str_t));
@@ -248,6 +259,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         return NULL;
     }
 
+    /* 创建一个临时的内存池，后面会清空掉;conf也主要用于解析配置文件的临时变量 */
     conf.temp_pool = ngx_create_pool(NGX_CYCLE_POOL_SIZE, log);
     if (conf.temp_pool == NULL) {
         ngx_destroy_pool(pool);
@@ -266,6 +278,11 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     log->log_level = NGX_LOG_DEBUG_ALL;
 #endif
 
+    /**
+     * ngx_conf_param：主要解析命令行中的核心模块配置参数，例如：nginx -t -c /usr/local/nginx/conf/nginx.conf
+       ngx_conf_parse：主要解析配置文件/usr/local/nginx/conf/nginx.conf 信息
+       ngx_conf_param：最终也是调用ngx_conf_parse
+    */
     if (ngx_conf_param(&conf) != NGX_CONF_OK) {
         environ = senv;
         ngx_destroy_cycle_pools(&conf);
@@ -1002,6 +1019,10 @@ ngx_delete_pidfile(ngx_cycle_t *cycle)
 }
 
 
+/**
+ * 处理信号；
+ * 例如./nginx -s stop,则处理Nginx的停止信号
+ */
 ngx_int_t
 ngx_signal_process(ngx_cycle_t *cycle, char *sig)
 {
@@ -1020,6 +1041,7 @@ ngx_signal_process(ngx_cycle_t *cycle, char *sig)
     file.name = ccf->pid;
     file.log = cycle->log;
 
+    /* 通过/usr/local/nginx/logs/nginx.pid 获取进行ID号 */
     file.fd = ngx_open_file(file.name.data, NGX_FILE_RDONLY,
                             NGX_FILE_OPEN, NGX_FILE_DEFAULT_ACCESS);
 
@@ -1042,6 +1064,7 @@ ngx_signal_process(ngx_cycle_t *cycle, char *sig)
 
     while (n-- && (buf[n] == CR || buf[n] == LF)) { /* void */ }
 
+    /* 最终得到PID */
     pid = ngx_atoi(buf, ++n);
 
     if (pid == (ngx_pid_t) NGX_ERROR) {
@@ -1051,6 +1074,7 @@ ngx_signal_process(ngx_cycle_t *cycle, char *sig)
         return 1;
     }
 
+    /* 调用ngx_os_signal_process方法，处理真正的信号 */
     return ngx_os_signal_process(cycle, sig, pid);
 
 }
